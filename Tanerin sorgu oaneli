@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Taner Checker 2026 Panel</title>
+    <style>
+        :root {
+            --neon-blue: #00d2ff; --deep-blue: #0088ff; --vip-gold: #ffcc00;
+            --bg-dark: #020408; --sidebar-bg: #060912; --card-glass: rgba(15, 22, 42, 0.95);
+            --admin-red: #ff3e3e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body, html { height: 100%; width: 100%; overflow: hidden; background: var(--bg-dark); color: #fff; }
+
+        /* BİLDİRİM & ROZET */
+        #notify-box {
+            position: fixed; top: 20px; right: -350px; background: var(--deep-blue);
+            color: white; padding: 15px 25px; border-radius: 10px; z-index: 20000;
+            box-shadow: 0 0 20px rgba(0,210,255,0.5); font-weight: bold; transition: 0.5s;
+        }
+        .badge {
+            background: var(--admin-red); color: white; border-radius: 50%;
+            padding: 2px 7px; font-size: 0.7rem; margin-left: auto; display: none;
+            box-shadow: 0 0 10px var(--admin-red);
+        }
+
+        /* GİRİŞ EKRANI */
+        #auth-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, #0a1128 0%, #020408 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 10000;
+        }
+        .auth-container { background: var(--card-glass); padding: 30px; border-radius: 20px; border: 1px solid var(--neon-blue); width: 400px; text-align: center; }
+        .auth-form { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        input, textarea { width: 100%; padding: 14px; background: rgba(0,0,0,0.7); border: 1px solid #1a2a4a; border-radius: 10px; color: #fff; outline: none; }
+        .btn-main { width: 100%; padding: 15px; background: var(--deep-blue); border: none; color: #fff; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+
+        /* ANA PANEL */
+        #main-layout { display: none; height: 100vh; width: 100vw; flex-direction: row; }
+        .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid rgba(0,210,255,0.2); display: flex; flex-direction: column; padding: 15px; }
+        .brand { text-align: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; color: var(--neon-blue); font-weight: 900; font-size: 1.2rem; }
+        
+        .nav-menu { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+        .cat-title { font-size: 0.7rem; color: #555; text-transform: uppercase; margin: 15px 0 5px 10px; letter-spacing: 1px; font-weight: bold; }
+        .nav-item { padding: 10px 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-bottom: 2px; }
+        .nav-item:hover { background: rgba(0,210,255,0.1); color: var(--neon-blue); }
+        .nav-item.active { background: linear-gradient(90deg, var(--deep-blue), var(--neon-blue)); color: white; }
+
+        .main-content { flex: 1; padding: 20px; display: flex; flex-direction: column; position: relative; overflow-y: auto; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .container { background: var(--card-glass); padding: 30px; border-radius: 20px; border: 1px solid rgba(0,210,255,0.2); margin-bottom: 20px; }
+        .res-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .res-table th { background: rgba(0,210,255,0.2); padding: 12px; text-align: left; color: var(--neon-blue); }
+        .res-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        #admin-panel { display: none; margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
+    </style>
+</head>
+<body onclick="initAudio()">
+
+<div id="notify-box">Sistem Bildirimi</div>
+<audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
+
+<div id="auth-screen">
+    <div class="auth-container">
+        <h2 style="color: var(--neon-blue);">TANER CHECKER 2026</h2>
+        <div class="auth-form">
+            <input type="text" id="userInp" placeholder="Kullanıcı Adı">
+            <input type="password" id="passInp" placeholder="Şifre">
+            <button class="btn-main" onclick="handleLogin()">GİRİŞ YAP</button>
+            <p style="color:var(--vip-gold); cursor:pointer; font-size:0.8rem;" onclick="handleLogin()">Hesapsız Giriş</p>
+        </div>
+    </div>
+</div>
+
+<div id="main-layout">
+    <aside class="sidebar">
+        <div class="brand">TANER CHECKER 2026</div>
+        <nav class="nav-menu">
+            <div class="cat-title">Genel</div>
+            <div class="nav-item active" onclick="go('home', this)">🏠 Anasayfa</div>
+            <div class="nav-item" onclick="go('ann', this)">📢 Duyurular <span id="ann-badge" class="badge">1</span></div>
+            
+            <div class="cat-title">Sorgu Sistemleri</div>
+            <div class="nav-item" onclick="go('as', this)">🧑 Ad Soyad Çözümleri</div>
+            <div class="nav-item" onclick="go('tc', this)">🪪 TC Çözümleri</div>
+            <div class="nav-item" onclick="go('adr', this)">📍 Adres Çözümleri</div>
+            <div class="nav-item" onclick="go('sy', this)">👨‍👩‍👦 Soyağacı Çözümleri</div>
+            
+            <div class="cat-title">Finansal & Dijital</div>
+            <div class="nav-item" onclick="go('ib', this)">💳 IBAN Çözümleri</div>
+            <div class="nav-item" onclick="go('em', this)">📧 E-Posta Çözümleri</div>
+            <div class="nav-item" onclick="go('ip', this)">🌐 IP Adres Çözümleri</div>
+            <div class="nav-item" onclick="go('gsm', this)">📱 GSM Çözümleri</div>
+            
+            <div class="cat-title">Güvenlik & Sağlık</div>
+            <div class="nav-item" onclick="go('sc', this)">📜 Sicil Sorgu</div>
+            <div class="nav-item" onclick="go('health', this)">🩺 Sağlık Çözümleri</div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div id="user-display" style="color:var(--neon-blue); font-weight:bold;">OTURUM: BEKLEMEDE</div>
+            <button class="btn-main" style="width:auto; padding:8px 15px; font-size:0.7rem;" onclick="toggleFS()">TAM EKRAN</button>
+        </div>
+
+        <div id="home" class="page active"><div class="container"><h1>Hoş Geldin, <span id="welcome-user">Taner Checker</span></h1><p style="margin-top:10px;">Panel tüm modülleriyle aktif hale getirildi.</p></div></div>
+        
+        <div id="ann" class="page"><div class="container"><h3>📢 Sistem Duyuruları</h3><div id="announcement-list"><div class="ann-card"><h4>Sistem Yayında</h4><p>Taner Checker 2026 tüm hızıyla hizmetinizde.</p></div></div><div id="admin-panel"><h3 style="color:var(--admin-red);">🛠 Yönetici Duyuru</h3><textarea id="annMsg" placeholder="Duyuru metni..."></textarea><button class="btn-main" style="margin-top:10px; background:var(--admin-red);" onclick="postAnnouncement()">HERKESE DUYUR</button></div></div></div>
+        
+        <div id="as" class="page"><div class="container"><h3>🧑 Ad Soyad Çözümleri</h3><input type="text" placeholder="Ad"><input type="text" placeholder="Soyad"><button class="btn-main" onclick="sim('r-as', 'Ad Soyad')">SORGULA</button><div id="r-as"></div></div></div>
+        <div id="tc" class="page"><div class="container"><h3>🪪 TC Çözümleri</h3><input type="number" placeholder="TC No"><button class="btn-main" onclick="sim('r-tc', 'TC')">SORGULA</button><div id="r-tc"></div></div></div>
+        <div id="adr" class="page"><div class="container"><h3>📍 Adres Çözümleri</h3><input type="text" placeholder="Adres Verisi"><button class="btn-main" onclick="sim('r-adr', 'Adres')">SORGULA</button><div id="r-adr"></div></div></div>
+        <div id="sy" class="page"><div class="container"><h3>👨‍👩‍👦 Soyağacı Çözümleri</h3><input type="number" placeholder="TC No"><button class="btn-main" onclick="sim('r-sy', 'Soyağacı')">SORGULA</button><div id="r-sy"></div></div></div>
+        <div id="ib" class="page"><div class="container"><h3>💳 IBAN Çözümleri</h3><input type="text" placeholder="TR..."><button class="btn-main" onclick="sim('r-ib', 'IBAN')">SORGULA</button><div id="r-ib"></div></div></div>
+        <div id="em" class="page"><div class="container"><h3>📧 E-Posta Çözümleri</h3><input type="email" placeholder="E-Posta"><button class="btn-main" onclick="sim('r-em', 'Email')">SORGULA</button><div id="r-em"></div></div></div>
+        <div id="ip" class="page"><div class="container"><h3>🌐 IP Adres Çözümleri</h3><input type="text" placeholder="IP"><button class="btn-main" onclick="sim('r-ip', 'IP')">SORGULA</button><div id="r-ip"></div></div></div>
+        <div id="gsm" class="page"><div class="container"><h3>📱 GSM Çözümleri</h3><input type="number" placeholder="Telefon No"><button class="btn-main" onclick="sim('r-gsm', 'GSM')">SORGULA</button><div id="r-gsm"></div></div></div>
+        <div id="sc" class="page"><div class="container"><h3>📜 Sicil Sorgu</h3><input type="number" placeholder="TC No"><button class="btn-main" onclick="sim('r-sc', 'Sicil')">SORGULA</button><div id="r-sc"></div></div></div>
+        <div id="health" class="page"><div class="container"><h3>🩺 Sağlık Çözümleri</h3><input type="text" placeholder="Hastalık/İlaç"><button class="btn-main" onclick="sim('r-he', 'Sağlık')">SORGULA</button><div id="r-he"></div></div></div>
+    </main>
+</div>
+
+<script>
+    const snd = document.getElementById('clickSound');
+    let aud = false;
+    function initAudio() { aud = true; }
+    
+    function playAction(msg) {
+        if(aud) { snd.currentTime = 0; snd.play().catch(()=>{}); }
+        const nb = document.getElementById('notify-box');
+        nb.innerText = msg;
+        nb.style.right = '20px';
+        setTimeout(() => { nb.style.right = '-350px'; }, 2500);
+    }
+
+    function handleLogin() {
+        const u = document.getElementById('userInp').value.toLowerCase() || "misafir";
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('main-layout').style.display = 'flex';
+        document.getElementById('user-display').innerText = "OTURUM: " + u.toUpperCase();
+        document.getElementById('welcome-user').innerText = u.toUpperCase();
+        if(u === "taner") document.getElementById('admin-panel').style.display = 'block';
+        playAction('Sisteme Giriş Yapıldı');
+    }
+
+    function go(id, el) {
+        playAction('Sayfa Değiştirildi');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+        if(id === 'ann') document.getElementById('ann-badge').style.display = 'none';
+    }
+
+    function postAnnouncement() {
+        const msg = document.getElementById('annMsg').value;
+        if(!msg) return;
+        const list = document.getElementById('announcement-list');
+        const newAnn = document.createElement('div');
+        newAnn.innerHTML = `<div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border-left:4px solid var(--admin-red); margin-bottom:10px;"><h4>Yönetici Duyurusu (@everyone)</h4><p>${msg}</p></div>`;
+        list.prepend(newAnn);
+        document.getElementById('ann-badge').style.display = 'inline-block';
+        document.getElementById('annMsg').value = "";
+        playAction('Duyuru Gönderildi!');
+    }
+
+    function toggleFS() {
+        playAction('Ekran Modu Değişti');
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    }
+
+    function sim(tid, n) {
+        playAction(n + ' Sorgusu Başladı');
+        const res = document.getElementById(tid);
+        res.innerHTML = "<p style='color:var(--neon-blue); margin-top:15px;'>Sorgulanıyor...</p>";
+        setTimeout(() => {
+            res.innerHTML = `<table class="res-table"><tr><th>VERİ</th><th>SONUÇ</th></tr><tr><td>Durum</td><td>BAŞARILI</td></tr><tr><td>ID</td><td>#${Math.floor(Math.random()*9999)}</td></tr></table>`;
+        }, 1000);
+    }
+</script>
+</body>
+</html>
